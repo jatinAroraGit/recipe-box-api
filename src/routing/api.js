@@ -6,6 +6,7 @@ const apiSecret = require('../../config/apiKey.json');
 const routes = require("./routes.js");
 const checkUser = require("./authentication");
 var recipeRouter = require('./recipe');
+var userAccountRouter = require('./account');
 //const admin = require('./src/firebase-admin/admin');
 const dataService = require('.//routes');
 var express = require('express');
@@ -18,6 +19,20 @@ process.env.SECRET = apiSecret.key;
 
 
 router.use(express.static(__dirname));
+
+router.use(function (req, res, next) {  // Enable cross origin resource sharing (for app frontend)
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+
+  // Prevents CORS preflight request (for PUT game_guess) from redirecting
+  if ('OPTIONS' == req.method) {
+    res.send(200);
+  }
+  else {
+    next(); // Passes control to next (Swagger) handler
+  }
+});
 router.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "../index.html"));
 
@@ -27,7 +42,8 @@ router.get("/about", function (req, res) {
   res.send({ 'Page': 'About' });
 });
 
-router.use('/recipe', recipeRouter);
+//router.use('/recipe', recipeRouter);
+router.use('/userAccount', userAccountRouter);
 
 router.get("/recipe/:recipeId", function (req, res) {
   res.send(req.params);

@@ -1,7 +1,7 @@
 /* jshint indent: 2 */
 
-module.exports = function (sequelize, DataTypes) {
-  return sequelize.define('UserAccount', {
+module.exports = function(sequelize, DataTypes) {
+  return sequelize.define('userAccount', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
@@ -30,6 +30,6 @@ module.exports = function (sequelize, DataTypes) {
       field: 'response'
     }
   }, {
-      tableName: 'UserAccount'
-    });
+    tableName: 'UserAccount'
+  });
 };
