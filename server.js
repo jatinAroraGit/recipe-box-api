@@ -29,7 +29,7 @@ if (process.platform == "win32") {
     cert: fs.readFileSync('./cert.pem'),
     passphrase: "recipebox"
   }, app)
-    .listen(3000, function () {
+    .listen(3000, "192.168.0.10", function () {
       console.log('Example app listening on port 3000! Go to https://localhost:3000/');
       dataService.initialize()
         .then(() => {
