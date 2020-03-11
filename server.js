@@ -46,7 +46,7 @@ else {
     passphrase: "recipebox"
   }, app)
     .listen(vmPort, vmHostname, function () {
-      console.log('Example app listening on port 3000! Go to https://localhost:3000/');
+      console.log('Example app listening on port 6759 Go to Recipe Box Website');
       dataService.initialize()
         .then(() => {
           console.log('DATABASE CONNECTED SUCCESSFULLY');
