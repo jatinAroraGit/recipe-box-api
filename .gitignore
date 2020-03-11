@@ -2,3 +2,5 @@ package-lock.json
 .env
 node_modules/
 config/
+cert.pem
+key.pem

@@ -3,7 +3,7 @@ var axios = require('axios');
 const { Sequelize, Model, DataTypes, Op } = require("sequelize");
 /* Important steps to connect to db instance and update it */
 
-var db = new Sequelize('prj666_201a04', dbUsername, dbPass, {
+var db = new Sequelize('prj666_201a04', keys.dbUsername, keys.dbPass, {
   host: 'mymysql.senecacollege.ca',
   dialect: 'mysql',
   define: {
