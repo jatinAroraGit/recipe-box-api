@@ -45,9 +45,9 @@ if (process.platform == "win32") {
 }
 else {
   https.createServer({
-    key: fs.readFileSync('../cert/prj666-2021.key'),
-    cert: fs.readFileSync('../prj666-2021.crt'),
-    ca: fs.readFileSync('../cert/RapidSSL_RSA_CA_2018.crt')
+    key: fs.readFileSync('cert/prj666-2021.key'),
+    cert: fs.readFileSync('cert/prj666-2021.crt'),
+    ca: fs.readFileSync('cert/RapidSSL_RSA_CA_2018.crt')
   }, app)
     .listen(vmPort, vmHostname, function () {
       console.log('Example app listening on port 6759 Go to Recipe Box Website');
