@@ -45,10 +45,7 @@ router.get("/about", function (req, res) {
 //router.use('/recipe', recipeRouter);
 router.use('/userAccount', userAccountRouter);
 
-router.get("/recipe/:recipeId", function (req, res) {
-  res.send(req.params);
-
-});
+router.use("/recipes", recipeRouter);
 router.get("/authenticate/:id", verifyUser, function (req, res) {
   res.json({
     message: 'Authenticated!'

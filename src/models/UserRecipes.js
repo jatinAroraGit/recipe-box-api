@@ -45,15 +45,15 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true,
       field: 'mealType'
     },
-    dietRestrictions: {
+    diet: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      field: 'dietRestrictions'
+      field: 'diet'
     },
-    ingredients: {
+    includeIngredients: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      field: 'ingredients'
+      field: 'includeIngredients'
     },
     cuisine: {
       type: DataTypes.STRING(255),
