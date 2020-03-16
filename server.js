@@ -11,7 +11,7 @@ const dataService = require('./src/routing/routes');
 const https = require('https');
 const fs = require('fs');
 var cookieParser = require('cookie-parser');
-var HTTP_PORT = process.env.PORT || 3000;
+var HTTP_PORT = process.env.PORT || 5000;
 // VM Options
 const vmHostname = '10.102.112.128';
 const vmPort = 10034;
@@ -28,6 +28,17 @@ app.get("/", function (req, res) {
 });
 console.log("System:: " + process.platform);
 if (process.platform == "win32") {
+  app.listen(HTTP_PORT, localIp, () => {
+    // app.listen(80, process.env.OPENSHIFT_NODEJS_IP || process.env.IP || '127.0.0.1', () => {
+    console.log("Server Running Locally On IP " + localIp + ":" + HTTP_PORT + "/");
+    dataService.initialize()
+      .then(() => {
+        console.log('DATABASE CONNECTED SUCCESSFULLY');
+      }).catch((err) => {
+        console.log(err);
+      });
+  });
+  /* // Local Https Server Code 
   https.createServer({
     key: fs.readFileSync('./key.pem'),
     cert: fs.readFileSync('./cert.pem'),
@@ -42,6 +53,7 @@ if (process.platform == "win32") {
           console.log(err);
         });
     })
+    */
 }
 else {
   https.createServer({
@@ -68,6 +80,9 @@ app.get('/android', function (req, res) {
   } catch (err) {
     res.send('File Not Found. Android app build is not available');
   }
+});
+app.post('/test', function (req, res) {
+  res.send({ "TestCall": "Success" });
 });
 
 app.get('/ios', function (req, res) {
