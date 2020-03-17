@@ -2,6 +2,7 @@ var express = require("express");
 var app = express();
 var cors = require("cors");
 var path = require("path");
+var ip = require('ip')
 const admin = require('firebase-admin');
 const apiSecret = require('./config/apiKey.json');
 const apiRouter = require('./src/routing/api');
@@ -10,10 +11,13 @@ const dataService = require('./src/routing/routes');
 const https = require('https');
 const fs = require('fs');
 var cookieParser = require('cookie-parser');
-var HTTP_PORT = process.env.PORT || 8082;
+var HTTP_PORT = process.env.PORT || 5000;
 // VM Options
 const vmHostname = '10.102.112.128';
 const vmPort = 10034;
+const localIp = ip.address();
+
+
 /*************DO NOT TOUCH ************************************ */
 app.use(cors());
 app.use(express.static(__dirname));
@@ -24,13 +28,24 @@ app.get("/", function (req, res) {
 });
 console.log("System:: " + process.platform);
 if (process.platform == "win32") {
+  app.listen(HTTP_PORT, localIp, () => {
+    // app.listen(80, process.env.OPENSHIFT_NODEJS_IP || process.env.IP || '127.0.0.1', () => {
+    console.log("Server Running Locally On IP " + localIp + ":" + HTTP_PORT + "/");
+    dataService.initialize()
+      .then(() => {
+        console.log('DATABASE CONNECTED SUCCESSFULLY');
+      }).catch((err) => {
+        console.log(err);
+      });
+  });
+  /* // Local Https Server Code 
   https.createServer({
     key: fs.readFileSync('./key.pem'),
     cert: fs.readFileSync('./cert.pem'),
     passphrase: "recipebox"
   }, app)
-    .listen(3000, function () {
-      console.log('Example app listening on port 3000! Go to https://localhost:3000/');
+    .listen(HTTP_PORT, localIp, function () {
+      console.log('Example app listening on port ' + HTTP_PORT + '  Go to  https://' + localIp + ':3000/');
       dataService.initialize()
         .then(() => {
           console.log('DATABASE CONNECTED SUCCESSFULLY');
@@ -38,12 +53,13 @@ if (process.platform == "win32") {
           console.log(err);
         });
     })
+    */
 }
 else {
   https.createServer({
-    key: fs.readFileSync('./key.pem'),
-    cert: fs.readFileSync('./cert.pem'),
-    passphrase: "recipebox"
+    key: fs.readFileSync('cert/prj666-2021.key'),
+    cert: fs.readFileSync('cert/prj666-2021.crt'),
+    ca: fs.readFileSync('cert/RapidSSL_RSA_CA_2018.crt')
   }, app)
     .listen(vmPort, vmHostname, function () {
       console.log('Example app listening on port 6759 Go to Recipe Box Website');
@@ -64,6 +80,9 @@ app.get('/android', function (req, res) {
   } catch (err) {
     res.send('File Not Found. Android app build is not available');
   }
+});
+app.post('/test', function (req, res) {
+  res.send({ "TestCall": "Success" });
 });
 
 app.get('/ios', function (req, res) {

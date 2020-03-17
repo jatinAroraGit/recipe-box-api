@@ -27,68 +27,68 @@ exports.getRecipes = async function (req, res) {
   console.log('KEY %%%% : ')
   console.log(apiKey);
   var flag = false;
-  var response = ""
+  let searchBoth = true;
+  let response = ""
   var query = "";
   var dbQuery = {};
+  var bodyParams = req.body;
   console.log(req.query);
-  for (var key in req.query) {
-    if (key == "user") {
-      flag = true;
-      continue;
-    }
-    if (query) {
-      query = query + "&" + key + "=" + req.query[key];
+  //check if user flag is true
+  if (bodyParams.user) {
+    flag = true;
+    searchBoth = false;
+  }
+  if (!user) {
 
 
-    }
-    else
-      query = query + key + "=" + req.query[key];
-
-    dbQuery[key] =
-      {
-        [Op.like]: '%' + (req.query[key]) + '%'
+    for (var key in req.query) {
+      if (key == "user") {
+        flag = true;
+        searchBoth = false;
+        continue;
       }
+      if (query) {
+        query = query + "&" + key + "=" + req.query[key];
+
+
+      }
+      else
+        query = query + key + "=" + req.query[key];
+
+      dbQuery[key] =
+        {
+          [Op.like]: '%' + (req.query[key]) + '%'
+        }
+    }
   }
 
   console.log('DB ======= ');
   console.log(dbQuery.key);
-  if (!flag) {
+  if (!flag && searchBoth) {
     var reqURL = urlBase + 'complexSearch?apiKey=' + process.env.secret + '&number=' + resultLimit + '&' + query;
     try {
-      response = await axios.get(reqURL);
-
+      let result = await axios.get(reqURL);
+      response = result;
     } catch (error) {
       console.error(error);
     }
     console.log('API RESULTS ========');
-    console.log(response.data.results);
+
     res.send(response.data);
   }
-  else if (flag) {
+  if (flag) {
     try {
       const { count, rows } = await UserRecipes.findAndCountAll(
         {
-          where: dbQuery,
+          where: bodyParams,
           raw: true
         }
 
       );
-      console.log("NUM RESULTS:: " + count);
-      response = response + "[";
-      for (let i = 1; i <= count; i++) {
-        var d = JSON.stringify(rows[i - 1]);
-        console.log("DATA ::::::::::: ");
-        console.log(d);
-        response = response + d;
-        if (i == count) {
-          response = response + ']'
-        }
-        else {
-          response = response + ','
-        }
-      }
 
-      // response = count + rows;
+      const result = JSON.stringify(rows);
+      console.log("RESULTS:: " + result);
+      response = result;
       console.log(response);
     } catch (err) {
       console.log(err.lineNumber);

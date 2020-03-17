@@ -43,8 +43,8 @@ exports.getUserAccountById = async function (req, res) {
       }
 
     );
-    console.log("RESULT:: " + row);
-    res.send(row);
+    console.log("RESULT:: " + JSON.stringify(row));
+    res.send(JSON.stringify(row));
   } catch (err) {
     console.log(err);
     res.send('Error' + err);
