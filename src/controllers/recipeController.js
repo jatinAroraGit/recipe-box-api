@@ -18,7 +18,7 @@ var db = new Sequelize(keys.dbUsername, keys.dbUsername, keys.dbPass, {
 });
 const resultLimit = 20; // limit of spoonacular api results; 
 var UserRecipes = db.import('../models/UserRecipes.js');
-var IngredientsCategory = db.import('../models/IngredientsCategory.js');
+var RecipeIngredients = db.import('../models/RecipeIngredients.js');
 
 /* Gets a list of recipes matching criteria
 format to come from APP : http://localhost:8082/recipe/search?id=123&cuisine=italian&title=pizza
@@ -246,3 +246,27 @@ exports.recipeUpdateGET = function (req, res) {
 };
 
 // Handle Author update on POST.
+exports.recipeTest = async function (req, res) {
+  console.log('TEST RECIPE \n');
+  let data = req.body;
+  let isPosted = false
+  /*
+    IngredientsCategory.create(data).then(() => {
+      res.send('DONE')
+    }).catch((err) => {
+      res.send(err);
+      console.log(err);
+    });
+  */
+  console.log(data);
+  
+  UserRecipes.findAll({
+    where: req.body,
+    include: [{
+      model: RecipeIngredients,
+      where: {recipedId: 2}
+     }]
+  }).then(data => {
+    console.log(data);
+  });
+}

@@ -1,6 +1,6 @@
 /* jshint indent: 2 */
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function(sequelize, DataTypes) {
   return sequelize.define('userRecipes', {
     id: {
       type: DataTypes.INTEGER(11),
@@ -51,7 +51,7 @@ module.exports = function (sequelize, DataTypes) {
       field: 'diet'
     },
     includeIngredients: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.INTEGER(11),
       allowNull: true,
       field: 'includeIngredients'
     },
@@ -104,6 +104,6 @@ module.exports = function (sequelize, DataTypes) {
       field: 'isPublished'
     }
   }, {
-      tableName: 'UserRecipes'
-    });
+    tableName: 'UserRecipes'
+  });
 };

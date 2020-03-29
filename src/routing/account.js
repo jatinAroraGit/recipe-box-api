@@ -7,7 +7,7 @@ var userAccountController = require('../controllers/userAccountController.js');
 
 // Routes for recipes
 router.get('/', function (req, res) {
-  res.send({ "router": "account" });
+  res.send({ "router": "userAccount" });
 });
 
 router.post('/createUserAccount', userAccountController.userAccountCreatePOST);

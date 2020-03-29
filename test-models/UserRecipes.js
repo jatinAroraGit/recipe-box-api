@@ -51,7 +51,7 @@ module.exports = function(sequelize, DataTypes) {
       field: 'diet'
     },
     includeIngredients: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.INTEGER(11),
       allowNull: true,
       field: 'includeIngredients'
     },

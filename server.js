@@ -27,10 +27,10 @@ app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "src/home.html"));
 });
 console.log("System:: " + process.platform);
-if (process.platform == "win32") {
+if (process.platform == "win32" || process.platform=="darwin" ){
   app.listen(HTTP_PORT, localIp, () => {
     // app.listen(80, process.env.OPENSHIFT_NODEJS_IP || process.env.IP || '127.0.0.1', () => {
-    console.log("Server Running Locally On IP " + localIp + ":" + HTTP_PORT + "/");
+    console.log("Server Running Locally On IP https://" + localIp + ":" + HTTP_PORT + "/");
     dataService.initialize()
       .then(() => {
         console.log('DATABASE CONNECTED SUCCESSFULLY');
