@@ -15,9 +15,7 @@ router.post('/searchx', recipeController.getRecipes); // search for recipes
 router.get('/create', recipeController.recipeCreateGET); // POST Create Recipe
 router.post('/createRecipe', recipeController.recipeCreatePOST);
 router.post('/updateRecipe', recipeController.recipeUpdatePOST);
-router.post('/example', (req, res) => {
-  console.log("req.body :: ");
-  console.log(req.body);
-});
+router.post('/test', recipeController.recipeTest);
+  
 
 module.exports = router;

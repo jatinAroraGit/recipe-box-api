@@ -7,9 +7,10 @@ var userAccountController = require('../controllers/userAccountController.js');
 
 // Routes for recipes
 router.get('/', function (req, res) {
-  res.send({ "router": "account" });
+  res.send({ "router": "userAccount" });
 });
 
 router.post('/createUserAccount', userAccountController.userAccountCreatePOST);
 router.post('/getUserAccount', userAccountController.getUserAccountById);
+router.post('/delete',userAccountController.userAccountDeletePOST);
 module.exports = router;
