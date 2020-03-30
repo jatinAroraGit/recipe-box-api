@@ -50,3 +50,18 @@ exports.getUserAccountById = async function (req, res) {
     res.send('Error' + err);
   }
 };
+
+exports.userAccountDeletePOST = function (req, res) {
+  
+
+    UserAccount.destroy({
+      where: { userEmail: req.body.userEmail }
+    })
+      .then(() => {
+        res.send("Success");
+      })
+      .catch(() => {
+        res.send("Error! User was not deleted");
+      })
+ 
+}
