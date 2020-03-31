@@ -25,10 +25,10 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: 'Untitled',
       field: 'recipeTitle'
     },
-    recipeDesc: {
+    summary: {
       type: DataTypes.STRING(10000),
       allowNull: true,
-      field: 'recipeDesc'
+      field: 'summary'
     },
     recipeImage: {
       type: DataTypes.STRING(255),
@@ -40,30 +40,30 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       field: 'recipeRating'
     },
-    mealType: {
+    dishTypes: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      field: 'mealType'
+      field: 'dishTypes'
     },
-    diet: {
+    diets: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      field: 'diet'
+      field: 'diets'
     },
     includeIngredients: {
       type: DataTypes.INTEGER(11),
       allowNull: true,
       field: 'includeIngredients'
     },
-    cuisine: {
+    cuisines: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      field: 'cuisine'
+      field: 'cuisines'
     },
-    recipeSource: {
+    sourceName: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      field: 'recipeSource'
+      field: 'sourceName'
     },
     nutrients: {
       type: DataTypes.STRING(255),
@@ -102,6 +102,16 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: '0',
       field: 'isPublished'
+    },
+    servings: {
+      type: DataTypes.INTEGER(11),
+      allowNull: false,
+      field: 'servings'
+    },
+    readyInMinutes: {
+      type: DataTypes.INTEGER(11),
+      allowNull: false,
+      field: 'readyInMinutes'
     }
   }, {
     tableName: 'UserRecipes'
