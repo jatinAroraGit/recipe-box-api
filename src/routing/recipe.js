@@ -10,7 +10,7 @@ router.get('/', function (req, res) {
   res.send({ "router": "recipe" }); 4
 });
 router.get('/detail/:id', recipeController.recipeDetail); // request a recipe detail by ID
-router.get('/search?*', recipeController.getRecipes);
+router.post('/search', recipeController.getRecipes);
 router.post('/searchx', recipeController.getRecipes); // search for recipes
 router.get('/create', recipeController.recipeCreateGET); // POST Create Recipe
 router.post('/createRecipe', recipeController.recipeCreatePOST);

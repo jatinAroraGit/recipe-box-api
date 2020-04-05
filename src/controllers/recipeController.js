@@ -7,8 +7,13 @@ const keys = require('../../config/apiKey.json')
 var rr = require('../routing/routes')
 //const recipeModel = require("../models/UserRecipes");
 const { Sequelize, Model, DataTypes, Op } = require("sequelize");
+let recipeResults=[];
+let RecipeDetails = require('../recipeDetails.js');
 /* Important steps to connect to db instance and update it */
-
+let resultant = {
+  recipes: [],
+  count: 0
+}
 var db = new Sequelize(keys.dbUsername, keys.dbUsername, keys.dbPass, {
   host: 'mymysql.senecacollege.ca',
   dialect: 'mysql',
@@ -16,7 +21,7 @@ var db = new Sequelize(keys.dbUsername, keys.dbUsername, keys.dbPass, {
     timestamps: false
   }
 });
-const resultLimit = 20; // limit of spoonacular api results; 
+const resultLimit = 3; // limit of spoonacular api results; 
 var UserRecipes = db.import('../models/UserRecipes.js');
 var RecipeIngredients = db.import('../models/RecipeIngredients.js');
 
@@ -38,7 +43,7 @@ exports.getRecipes = async function (req, res) {
     flag = true;
     searchBoth = false;
   }
-  if (!user) {
+  if (!flag) {
 
 
     for (var key in req.query) {
@@ -64,19 +69,34 @@ exports.getRecipes = async function (req, res) {
 
   console.log('DB ======= ');
   console.log(dbQuery.key);
-  if (!flag && searchBoth) {
-    var reqURL = urlBase + 'complexSearch?apiKey=' + process.env.secret + '&number=' + resultLimit + '&' + query;
+  if (flag){ //&& searchBoth) {
+    var reqURL = urlBase + 'complexSearch?apiKey=' + keys.key + '&number=' + resultLimit + '&' +'addRecipeInformation=true&instructionsRequired=true&'+ query;
     try {
-      let result = await axios.get(reqURL);
-      response = result;
+      let result;
+      await axios.get(reqURL).then(recipes=>{
+       // let recipeObj = JSON.parse(recipes.data.results);
+        
+         recipes.data.results.forEach(recipe => {
+         let details = new RecipeDetails(recipe.id,false,recipe.sourceName,recipe.title,recipe.summary,recipe.servings,recipe.readyInMinutes,recipe.image, ""); 
+          recipeResults.push(details);
+          console.log(details);
+          console.log("*****************");
+         });
+        
+        
+         result = JSON.stringify(recipeResults);
+         response = result;
+
+      });
+     // response = result;
     } catch (error) {
       console.error(error);
     }
     console.log('API RESULTS ========');
 
-    res.send(response.data);
+    res.send(response);
   }
-  if (flag) {
+  if (!flag) {
     try {
       const { count, rows } = await UserRecipes.findAndCountAll(
         {
@@ -87,7 +107,11 @@ exports.getRecipes = async function (req, res) {
       );
 
       const result = JSON.stringify(rows);
-      console.log("RESULTS:: " + result);
+      rows.array.forEach(recipe => {
+        let detail = new RecipeDetails(recipe.uid,true,recipe.sourceName,recipe.recipeTitle,recipe.summary,recipe.servings,recipe.readyInMinutes,recipe.image, ""); 
+      console.log("USER RESULT:: " + detail);
+      });
+      
       response = result;
       console.log(response);
     } catch (err) {

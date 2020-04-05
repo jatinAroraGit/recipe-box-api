@@ -8,5 +8,6 @@ key.pem
 .firebase/hosting.cHVibGlj.cache
 greenlock.d/config.json.bak
 .firebase/hosting..cache
-
+appBuilds/android/
+appBuilds/
 cert/
