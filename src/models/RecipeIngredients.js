@@ -1,6 +1,6 @@
 /* jshint indent: 2 */
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('recipeIngredients', {
     ingredientId: {
       type: DataTypes.INTEGER(11),
@@ -9,10 +9,10 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true,
       field: 'ingredientId'
     },
-    recipeId: {
+    recipeUid: {
       type: DataTypes.STRING(15),
       allowNull: false,
-      field: 'recipeId'
+      field: 'recipeUID'
     },
     ingredientName: {
       type: DataTypes.STRING(100),
@@ -30,6 +30,6 @@ module.exports = function(sequelize, DataTypes) {
       field: 'unitOfMeasure'
     }
   }, {
-    tableName: 'RecipeIngredients'
-  });
+      tableName: 'RecipeIngredients'
+    });
 };

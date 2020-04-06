@@ -2,7 +2,7 @@ var express = require("express");
 var app = express();
 var cors = require("cors");
 var path = require("path");
-var ip = require('ip')
+var ip = require('internal-ip')
 const admin = require('firebase-admin');
 const apiSecret = require('./config/apiKey.json');
 const apiRouter = require('./src/routing/api');
@@ -15,7 +15,7 @@ var HTTP_PORT = process.env.PORT || 5000;
 // VM Options
 const vmHostname = '10.102.112.128';
 const vmPort = 10034;
-const localIp = ip.address();
+const localIp = ip.v4();
 
 
 /*************DO NOT TOUCH ************************************ */
@@ -27,16 +27,19 @@ app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "src/home.html"));
 });
 console.log("System:: " + process.platform);
-if (process.platform == "win32" || process.platform=="darwin" ){
-  app.listen(HTTP_PORT, localIp, () => {
-    // app.listen(80, process.env.OPENSHIFT_NODEJS_IP || process.env.IP || '127.0.0.1', () => {
-    console.log("Server Running Locally On IP https://" + localIp + ":" + HTTP_PORT + "/");
-    dataService.initialize()
-      .then(() => {
-        console.log('DATABASE CONNECTED SUCCESSFULLY');
-      }).catch((err) => {
-        console.log(err);
-      });
+if (process.platform == "win32" || process.platform == "darwin") {
+  ip.v4().then(ipadr => {
+    console.log(ipadr);
+    app.listen(HTTP_PORT, ipadr, () => {
+      // app.listen(80, process.env.OPENSHIFT_NODEJS_IP || process.env.IP || '127.0.0.1', () => {
+      console.log("Server Running Locally On IP http://" + ipadr + ":" + HTTP_PORT + "/");
+      dataService.initialize()
+        .then(() => {
+          console.log('DATABASE CONNECTED SUCCESSFULLY');
+        }).catch((err) => {
+          console.log(err);
+        });
+    });
   });
   /* // Local Https Server Code 
   https.createServer({
