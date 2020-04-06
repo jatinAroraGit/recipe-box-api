@@ -9,10 +9,10 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true,
       field: 'ingredientId'
     },
-    recipeId: {
+    recipeUid: {
       type: DataTypes.STRING(15),
       allowNull: false,
-      field: 'recipeId'
+      field: 'recipeUID'
     },
     ingredientName: {
       type: DataTypes.STRING(100),

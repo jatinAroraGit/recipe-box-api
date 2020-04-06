@@ -9,13 +9,20 @@ var recipeController = require('../controllers/recipeController');
 router.get('/', function (req, res) {
   res.send({ "router": "recipe" }); 4
 });
-router.get('/detail/:id', recipeController.recipeDetail); // request a recipe detail by ID
+router.post('/detail', recipeController.recipeDetail); // request a recipe detail by ID
 router.post('/search', recipeController.getRecipes);
 router.post('/searchx', recipeController.getRecipes); // search for recipes
-router.get('/create', recipeController.recipeCreateGET); // POST Create Recipe
+//router.get('/create', recipeController.recipeCreateGET); // POST Create Recipe
+//router.post('/getUserRecipeByUserId', recipeController.getUserRecipeByUserId);
+router.post('/getUserRecipeByUserId', recipeController.userRecipeDetail);
+
+
 router.post('/createRecipe', recipeController.recipeCreatePOST);
 router.post('/updateRecipe', recipeController.recipeUpdatePOST);
+router.post('/addRecipe', recipeController.recipeAddToUserPOST);
+router.post('/deleteRecipe', recipeController.recipeTest);
+
 router.post('/test', recipeController.recipeTest);
-  
+
 
 module.exports = router;

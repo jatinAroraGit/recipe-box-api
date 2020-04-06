@@ -1,6 +1,6 @@
 /* jshint indent: 2 */
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('userRecipes', {
     id: {
       type: DataTypes.INTEGER(11),
@@ -40,10 +40,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       field: 'recipeRating'
     },
-    dishTypes: {
+    mealType: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      field: 'dishTypes'
+      field: 'mealType'
     },
     diets: {
       type: DataTypes.STRING(255),
@@ -55,10 +55,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       field: 'includeIngredients'
     },
-    cuisines: {
+    cuisine: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      field: 'cuisines'
+      field: 'cuisine'
     },
     sourceName: {
       type: DataTypes.STRING(255),
@@ -105,15 +105,15 @@ module.exports = function(sequelize, DataTypes) {
     },
     servings: {
       type: DataTypes.INTEGER(11),
-      allowNull: false,
+      allowNull: true,
       field: 'servings'
     },
     readyInMinutes: {
       type: DataTypes.INTEGER(11),
-      allowNull: false,
+      allowNull: true,
       field: 'readyInMinutes'
     }
   }, {
-    tableName: 'UserRecipes'
-  });
+      tableName: 'UserRecipes'
+    });
 };
