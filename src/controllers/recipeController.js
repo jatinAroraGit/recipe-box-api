@@ -4,6 +4,9 @@ var axios = require('axios');
 const urlBase = "https://api.spoonacular.com/recipes/"
 const apiKey = process.env.secret;
 const keys = require('../../config/apiKey.json')
+var sanitizeHtml = require('sanitize-html');
+var stripHtml = require('string-strip-html');
+
 var rr = require('../routing/routes')
 var querystring = require("querystring");
 //const recipeModel = require("../models/UserRecipes");
@@ -26,11 +29,15 @@ var db = new Sequelize(keys.dbUsername, keys.dbUsername, keys.dbPass, {
 });
 const resultLimit = 5; // limit of spoonacular api results; 
 var UserRecipes = db.import('../models/UserRecipes.js');
-var UserAccount = require('../models/UserAccount');
+var UserAccount = db.import('../models/UserAccount.js');
 
 var RecipeIngredients = db.import('../models/RecipeIngredients.js');
 var UserRecipeInstructions = db.import('../models/UserRecipeInstructions.js');
 
+let keysAvailable = [];
+keysAvailable.push(keys.key);
+keysAvailable.push(keys.key2);
+let keyInUse = 0;
 /* Gets a list of recipes matching criteria
 format to come from APP : http://localhost:8082/recipe/search?id=123&cuisine=italian&title=pizza
 */
@@ -39,7 +46,7 @@ exports.getRecipes = async function (req, res) {
   console.log(apiKey);
   var flag = true;
   let searchBoth = true;
-  let response = ""
+  let response = "";
   var query = "";
   var dbQuery = {};
   var bodyParams = req.body;
@@ -87,29 +94,36 @@ exports.getRecipes = async function (req, res) {
       }
     }
 
+    let usingKey = keysAvailable[keyInUse];
 
-    var reqURL = urlBase + 'complexSearch?apiKey=' + keys.key + '&number=' + resultLimit + '&' + 'addRecipeInformation=true&instructionsRequired=true&' + searchQuery;
-    console.log('Spoonacular Query: ' + reqURL);
-    try {
-      let result;
-      await axios.get(reqURL).then(recipes => {
-        // let recipeObj = JSON.parse(recipes.data.results);
+    let runAgain = true;
+    while (runAgain) {
+      try {
+        let result;
+        usingKey = keysAvailable[keyInUse];
+        var reqURL = urlBase + 'complexSearch?apiKey=' + usingKey + '&number=' + resultLimit + '&' + 'addRecipeInformation=true&instructionsRequired=true&' + searchQuery;
+        console.log('Spoonacular Query: ' + reqURL);
+        await axios.get(reqURL).then(recipes => {
+          // let recipeObj = JSON.parse(recipes.data.results);
+          runAgain = false;
+          recipes.data.results.forEach(recipe => {
+            let details = new RecipeDetails(recipe.id, false, recipe.sourceName, recipe.title, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", (recipe.cuisines) ? recipe.cuisines[0] : "", (recipe.dishTypes) ? recipe.dishTypes[0] : "", false, "");
+            recipeResults.push(details);
+            console.log(details);
+            console.log("*****************");
+          });
 
-        recipes.data.results.forEach(recipe => {
-          let details = new RecipeDetails(recipe.id, false, recipe.sourceName, recipe.title, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", false);
-          recipeResults.push(details);
-          console.log(details);
-          console.log("*****************");
+
+          //result = JSON.stringify(recipeResults);
+          // response = result;
+
         });
-
-
-        //result = JSON.stringify(recipeResults);
         // response = result;
-
-      });
-      // response = result;
-    } catch (error) {
-      console.error(error);
+      } catch (error) {
+        console.error(error);
+        if (keyInUse < 2)
+          keyInUse++;
+      }
     }
     console.log('API RESULTS ========');
 
@@ -189,9 +203,9 @@ exports.getRecipes = async function (req, res) {
                 raw: true
               });
               */
-              if (recipe) {
+              if (recipe && recipe.isPublished) {
                 console.log("found recipe", recipe);
-                let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", recipe.isPublished);
+                let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, recipe.isPublished, recipe.userId);
                 console.log("USER RESULT:: " + detail);
 
                 foundRecipesWithId.push(detail);
@@ -235,7 +249,7 @@ exports.getRecipes = async function (req, res) {
         );
         // const result = JSON.stringify(rows);
         rows.forEach(recipe => {
-          let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", recipe.isPublished);
+          let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, recipe.isPublished, recipe.userId);
           console.log("USER RESULT:: " + detail);
           recipeResults.push(detail);
 
@@ -275,10 +289,11 @@ exports.getRecipes = async function (req, res) {
 
         //  const result = JSON.stringify(rows);
         rows.forEach(recipe => {
-          let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", recipe.isPublished);
-          console.log("USER RESULT:: " + detail);
-          recipeResults.push(detail);
-
+          if (recipe.isPublished) {
+            let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, recipe.isPublished, recipe.userId);
+            console.log("USER RESULT:: " + detail);
+            recipeResults.push(detail);
+          }
         });
 
         //  response = result;
@@ -304,30 +319,39 @@ exports.recipeDetail = async function (req, res) {
   var id = "";
   id = id + req.body.id;
   if (id.charAt(0) != 'U') {
-    try {
-      recipe = await axios.get(urlBase + id + '/information?apiKey=' + keys.key);
-      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.recipeTitle, recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", false);
-      recipe.data.extendedIngredients.forEach(i => {
-        let newIngredient = new Ingredients(i.id, i.name, i.amount, i.unit)
-        recipeDetail.includedIngredients.push(newIngredient);
-      });
-      console.log(recipe.data.analyzedInstructions);
-      await recipe.data.analyzedInstructions.forEach(s => {
-        console.log(s);
-        for (var i = 0; i < s.steps.length; i++) {
-          var step = s.steps[i];
-          let newStep;
-          if (i == 0)
-            newStep = new Steps(step.number, step.step, s.name);
-          else
-            newStep = new Steps(step.number, step.step, "");
-          recipeDetail.instructions.push(newStep);
-        }
+    let usingKey = keysAvailable[keyInUse];
 
-      })
-      res.send(recipeDetail);
-    } catch (error) {
-      console.error(error);
+    let runAgain = true;
+    while (runAgain) {
+      try {
+        usingKey = keysAvailable[keyInUse];
+        recipe = await axios.get(urlBase + id + '/information?apiKey=' + usingKey);
+        let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title, recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines) ? recipe.data.cuisines[0] : "", (recipe.data.dishTypes) ? recipe.data.dishTypes[0] : "", false, "");
+        recipe.data.extendedIngredients.forEach(i => {
+          let newIngredient = new Ingredients(i.id, i.name, i.amount, i.unit)
+          recipeDetail.includedIngredients.push(newIngredient);
+        });
+        console.log(recipe.data.analyzedInstructions);
+        await recipe.data.analyzedInstructions.forEach(s => {
+          console.log(s);
+          for (var i = 0; i < s.steps.length; i++) {
+            var step = s.steps[i];
+            let newStep;
+            if (i == 0)
+              newStep = new Steps(step.number, step.step, s.name);
+            else
+              newStep = new Steps(step.number, step.step, "");
+            recipeDetail.instructions.push(newStep);
+          }
+
+        })
+        runAgain = false;
+        res.send(recipeDetail);
+      } catch (error) {
+        console.error(error);
+        if (keyInUse < 2)
+          keyInUse++;
+      }
     }
   }
   else
@@ -340,7 +364,7 @@ exports.recipeDetail = async function (req, res) {
 
       });
 
-      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", recipe.isPublished);
+      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, recipe.isPublished, recipe.userId);
       console.log(ingredients);
       ingredients.forEach(i => {
         let newIngredient = new Ingredients(i.ingredientId, i.ingredientName, i.quantityUsed, i.unitOfMeasure)
@@ -373,7 +397,7 @@ exports.userRecipeDetail = async function (req, res) {
   if (id.charAt(0) != 'U') {
     try {
       recipe = await axios.get(urlBase + id + '/information?apiKey=' + keys.key);
-      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.recipeTitle, recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", false);
+      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title, recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines) ? recipe.data.cuisines[0] : "", (recipe.data.dishTypes) ? recipe.data.dishTypes[0] : "", false, "");
       recipe.data.extendedIngredients.forEach(i => {
         let newIngredient = new Ingredients(i.id, i.name, i.amount, i.unit)
         recipeDetail.includedIngredients.push(newIngredient);
@@ -407,7 +431,7 @@ exports.userRecipeDetail = async function (req, res) {
 
       });
 
-      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", "", (recipe.isPublished == 1) ? true : false);
+      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, (recipe.isPublished == 1) ? true : false, recipe.userId);
       console.log(ingredients);
       ingredients.forEach(i => {
         let newIngredient = new Ingredients(i.ingredientId, i.ingredientName, i.quantityUsed, i.unitOfMeasure)
@@ -451,11 +475,21 @@ exports.getUserRecipeByUserId = async function getUserRecipeByUserId(req, res) {
 
   res.send(recipe);
 }
+exports.getAllUserRecipeByUserId = async function getAllUserRecipeByUserId(req, res) {
+  let recipes = await UserRecipes.findAll({
+    where: {
 
+      userId: req.body.userId
+    },
+    raw: true
+  });
+
+  res.send(recipes);
+}
 
 // Handle Author create on POST.
 exports.recipeCreatePOST = async function (req, res) {
-  console.log('Creatin New RECIPE \n');
+  console.log('Creating New RECIPE \n');
   let data = req.body;
   console.log(data);
   let isPosted = false;
@@ -541,10 +575,96 @@ exports.recipeCreatePOST = async function (req, res) {
 
 
 }
+async function getRecipeDetails(recipeId) {
+  var response;
+  // console.log('Sending API Request to : '+ urlBase+req.params.id+'/information');
+  var id = "";
+  id = id + recipeId;
+  if (id.charAt(0) != 'U') {
+    try {
+      recipe = await axios.get(urlBase + id + '/information?apiKey=' + keys.key);
+      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title, recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines) ? recipe.data.cuisines[0] : "", (recipe.data.dishTypes) ? recipe.data.dishTypes[0] : "", false, "");
+      recipe.data.extendedIngredients.forEach(i => {
+        let newIngredient = new Ingredients(i.id, i.name, i.amount, i.unit)
+        recipeDetail.includedIngredients.push(newIngredient);
+      });
+      console.log(recipe.data.analyzedInstructions);
+      await recipe.data.analyzedInstructions.forEach(s => {
+        console.log(s);
+        for (var i = 0; i < s.steps.length; i++) {
+          var step = s.steps[i];
+          let newStep;
+          if (i == 0)
+            newStep = new Steps(step.number, step.step, s.name);
+          else
+            newStep = new Steps(step.number, step.step, "");
+          recipeDetail.instructions.push(newStep);
+        }
+
+      })
+      return recipeDetail;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  else
+    if (id.charAt(0) == 'U') {
+      let recipe = await getUserRecipe(id);
+      const ingredients = await RecipeIngredients.findAll({
+        where: {
+          recipeUid: id,
+        },
+
+      });
+
+      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, (recipe.isPublished == 1) ? true : false, recipe.userId);
+      console.log(ingredients);
+      ingredients.forEach(i => {
+        let newIngredient = new Ingredients(i.ingredientId, i.ingredientName, i.quantityUsed, i.unitOfMeasure)
+        recipeDetail.includedIngredients.push(newIngredient);
+      });
+      const steps = await UserRecipeInstructions.findAll({
+        where: {
+          uid: id
+        },
+
+      });
+      steps.forEach(s => {
+        let newStep = new Steps(s.instructionId, s.description, "");
+        recipeDetail.instructions.push(newStep);
+      });
+      return recipeDetail;
+
+    };
+
+
+};
 
 exports.recipeAddToUserPOST = async function (req, res) {
   console.log('Adding RECIPE \n');
   let data = req.body;
+  //let tempRecipe = await getRecipeDetails(data.id);
+  // console.log(tempRecipe);
+  // res.send();
+  let recipeTitle = data.title;
+  let userId = req.body.userId;
+  let image = data.image;
+  delete data.image;
+  data.recipeImage = image;
+  let originalSummary = data.summary;
+  var cleanSummary = sanitizeHtml(originalSummary);
+  let pureTextSummary = stripHtml(cleanSummary);
+  data.summary = pureTextSummary;
+  console.log('New Summary:: \n' + data.summary);
+  delete data.userRecipe;
+  delete data.id;
+  delete data.title;
+  data.recipeTitle = recipeTitle;
+  data.isPublished = false;
+  console.log(data);
+  //res.send();
+
+
   let isPosted = false
 
   await UserRecipes.create(data).then(async tableData => {
@@ -553,8 +673,69 @@ exports.recipeAddToUserPOST = async function (req, res) {
     await userRecipe.save();
 
     isPosted = true;
+    let ingredients = [];
+    let steps = [];
+    if (data.includedIngredients) {
+      ingredients = data.includedIngredients;
+    }
+    else if (data.ingredients) {
+      ingredients = data.ingredients;
+    }
 
-    console.log(userRecipe)
+    if (data.instructions) {
+      for (var i = 0; i < data.instructions.length; i++) {
+        steps[i] = data.instructions[i].description;
+      }
+    }
+    else if (data.steps) {
+      steps = data.steps;
+    }
+
+    console.log(userRecipe);
+
+
+
+    if (ingredients) {
+      for (var i = 0; i < ingredients.length; i++) {
+        let sendData = {
+          "recipeId": userRecipe.id,
+          "recipeUid": userRecipe.uid,
+          "ingredientName": ingredients[i].name,
+          "quantityUsed": ingredients[i].amount,
+          "unitOfMeasure": ingredients[i].unit
+
+        }
+        console.log("Sending Data to DB", sendData);
+        await RecipeIngredients.create(sendData);
+
+      }
+    }
+
+    if (steps) {
+      for (var i = 0; i < steps.length; i++) {
+        let sendData = {
+          "recipeId": userRecipe.id,
+          "uid": userRecipe.uid,
+          "userId": userId,
+          "description": steps[i],
+          "specialInfo": "",
+
+        }
+        await UserRecipeInstructions.create(sendData);
+
+      }
+    }
+    let userAccount = await UserAccount.findOne({ where: { uid: userId } });
+    console.log(userAccount);
+    let newRecipesList = ((userAccount.userRecipes) ? userAccount.userRecipes + ',' : '') + userRecipe.uid;
+
+
+    await UserAccount.update({ userRecipes: newRecipesList }, {
+
+      where: {
+        uid: userId
+      }
+    })
 
     res.send('Successful Create' + data);
 
@@ -637,6 +818,7 @@ exports.recipeUpdatePOST = async function (req, res) {
 
       }
     }
+    res.send('Success');
   }).catch(function (err) {
     console.log(err);
     isPosted = false;
@@ -648,19 +830,27 @@ exports.recipeUpdatePOST = async function (req, res) {
 }
 
 // Display Author delete form on GET.
-exports.recipeDeleteGET = function (req, res) {
-  res.send('NOT IMPLEMENTED: Author delete GET');
+exports.recipeDelete = async function (req, res) {
+  let uid = req.body.uid;
+  await UserRecipes.destroy({
+    where: {
+      uid: uid
+    }
+  });
+  await UserRecipeInstructions.destroy({
+    where: {
+      uid: uid
+    }
+  })
+  await RecipeIngredients.destroy({
+    where: {
+      recipeUID: uid
+    }
+  })
+
+  res.send('Success');
 };
 
-// Handle Author delete on POST.
-exports.recipeDeletePOST = function (req, res) {
-  res.send('NOT IMPLEMENTED: Author delete POST');
-};
-
-// Display Author update form on GET.
-exports.recipeUpdateGET = function (req, res) {
-  res.send('NOT IMPLEMENTED: Author update GET');
-};
 
 // Handle Author update on POST.
 exports.recipeTest = async function (req, res) {

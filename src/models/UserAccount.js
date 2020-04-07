@@ -1,7 +1,7 @@
 /* jshint indent: 2 */
 
 module.exports = function (sequelize, DataTypes) {
-  return sequelize.define('UserAccount', {
+  return sequelize.define('userAccount', {
     id: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
@@ -12,11 +12,13 @@ module.exports = function (sequelize, DataTypes) {
     uid: {
       type: DataTypes.STRING(30),
       allowNull: false,
+      unique: true,
       field: 'uid'
     },
     userEmail: {
       type: DataTypes.STRING(250),
       allowNull: false,
+      unique: true,
       field: 'userEmail'
     },
     securityQuestion: {
@@ -28,6 +30,16 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(10000),
       allowNull: false,
       field: 'response'
+    },
+    userRecipes: {
+      type: DataTypes.STRING(2000),
+      allowNull: true,
+      field: 'userRecipes'
+    },
+    userCookbooks: {
+      type: DataTypes.STRING(2000),
+      allowNull: false,
+      field: 'userCookbooks'
     }
   }, {
       tableName: 'UserAccount'

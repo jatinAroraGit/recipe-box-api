@@ -20,7 +20,8 @@ router.post('/getUserRecipeByUserId', recipeController.userRecipeDetail);
 router.post('/createRecipe', recipeController.recipeCreatePOST);
 router.post('/updateRecipe', recipeController.recipeUpdatePOST);
 router.post('/addRecipe', recipeController.recipeAddToUserPOST);
-router.post('/deleteRecipe', recipeController.recipeTest);
+router.post('/deleteRecipe', recipeController.recipeDelete);
+router.post('/allUserRecipes', recipeController.getAllUserRecipeByUserId);
 
 router.post('/test', recipeController.recipeTest);
 
