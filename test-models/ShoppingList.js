@@ -1,6 +1,6 @@
 /* jshint indent: 2 */
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function(sequelize, DataTypes) {
   return sequelize.define('shoppingList', {
     listId: {
       type: DataTypes.INTEGER(10),
@@ -19,6 +19,6 @@ module.exports = function (sequelize, DataTypes) {
       field: 'userId'
     }
   }, {
-      tableName: 'ShoppingList'
-    });
+    tableName: 'ShoppingList'
+  });
 };
