@@ -2,7 +2,8 @@ var express = require("express");
 var app = express();
 var cors = require("cors");
 var path = require("path");
-var ip = require('internal-ip')
+var ip = require('internal-ip');
+var getInternalIp = require("get-internal-ip");
 const admin = require('firebase-admin');
 const apiSecret = require('./config/apiKey.json');
 const apiRouter = require('./src/routing/api');
@@ -28,6 +29,13 @@ app.get("/", function (req, res) {
 });
 console.log("System:: " + process.platform);
 if (process.platform == "win32" || process.platform == "darwin") {
+  const v4Info = (getInternalIp.v4());
+  //  console.log(getInternalIp.v4());
+  //const ipAdress = JSON.stringify(v4Info);
+  //const idr = ipAdress["Wi-Fi"];
+  // console.log(idr);
+  //console.log(ipAdress);
+  //console.log(ipAdress);
   ip.v4().then(ipadr => {
     console.log(ipadr);
     app.listen(HTTP_PORT, ipadr, () => {

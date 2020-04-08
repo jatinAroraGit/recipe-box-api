@@ -26,13 +26,16 @@
     "express": "^4.17.1",
     "firebase-admin": "^8.8.0",
     "g": "^2.0.1",
+    "get-internal-ip": "^3.0.0",
     "greenlock-express": "^4.0.3",
     "internal-ip": "^6.0.0",
     "ip": "^1.1.5",
     "localtunnel": "^2.0.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
+    "sanitize-html": "^1.22.1",
     "sequelize": "^5.21.5",
-    "sequelize-auto": "^0.4.29"
+    "sequelize-auto": "^0.4.29",
+    "string-strip-html": "^4.3.19"
   }
 }

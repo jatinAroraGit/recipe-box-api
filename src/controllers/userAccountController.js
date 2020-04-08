@@ -14,6 +14,11 @@ var db = new Sequelize('prj666_201a04', keys.dbUsername, keys.dbPass, {
 });
 
 var UserAccount = db.import('../models/UserAccount.js');
+var UserRecipes = db.import('../models/UserRecipes.js');
+var Cookbook = db.import('../models/Cookbook.js');
+var ShoppingList = db.import('../models/ShoppingList.js');
+var RecipeIngredients = db.import('../models/RecipeIngredients.js');
+var UserRecipeInstructions = db.import('../models/UserRecipeInstructions.js');
 
 exports.userAccountCreatePOST = function (req, res) {
   res.type('application/json')
@@ -24,11 +29,12 @@ exports.userAccountCreatePOST = function (req, res) {
   // console.log(req.body.email);
   UserAccount.create(req.body).then(() => {
     res.send('DONE')
+
+    console.log('Created');
   }).catch((err) => {
     res.send(err);
     console.log(err);
 
-    console.log('Created');
   });
 
 };
@@ -52,16 +58,28 @@ exports.getUserAccountById = async function (req, res) {
 };
 
 exports.userAccountDeletePOST = function (req, res) {
-  
 
-    UserAccount.destroy({
-      where: { userEmail: req.body.userEmail }
+
+  UserAccount.destroy({
+    where: { userEmail: req.body.userEmail }
+  });
+  UserRecipes.destroy({
+    where: { userId: req.body.userId }
+  })
+  UserRecipeInstructions.destroy({
+    where: { userId: req.body.userId }
+  })
+  Cookbook.destroy({
+    where: { userId: req.body.userId }
+  });
+  UserRecipes.destroy({
+    where: { userId: req.body.userId }
+  })
+    .then(() => {
+      res.send("Success");
     })
-      .then(() => {
-        res.send("Success");
-      })
-      .catch(() => {
-        res.send("Error! User was not deleted");
-      })
- 
+    .catch(() => {
+      res.send("Error! User was not deleted");
+    })
+
 }
