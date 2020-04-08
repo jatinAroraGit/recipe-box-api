@@ -38,7 +38,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     userCookbooks: {
       type: DataTypes.STRING(2000),
-      allowNull: false,
+      allowNull: true,
       field: 'userCookbooks'
     }
   }, {

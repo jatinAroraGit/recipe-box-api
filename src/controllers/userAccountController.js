@@ -29,11 +29,12 @@ exports.userAccountCreatePOST = function (req, res) {
   // console.log(req.body.email);
   UserAccount.create(req.body).then(() => {
     res.send('DONE')
+
+    console.log('Created');
   }).catch((err) => {
     res.send(err);
     console.log(err);
 
-    console.log('Created');
   });
 
 };
