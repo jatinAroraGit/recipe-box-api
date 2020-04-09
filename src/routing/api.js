@@ -7,6 +7,8 @@ const routes = require("./routes.js");
 const checkUser = require("./authentication");
 var recipeRouter = require('./recipe');
 var userAccountRouter = require('./account');
+var cookbookRouter = require('./Jcookbook');
+var shoppingListRouter = require('./JshoppingList');
 //const admin = require('./src/firebase-admin/admin');
 const dataService = require('.//routes');
 var express = require('express');
@@ -46,6 +48,9 @@ router.get("/about", function (req, res) {
 router.use('/userAccount', userAccountRouter);
 
 router.use("/recipes", recipeRouter);
+router.use("/cookbooks", cookbookRouter);
+router.use("/shoppingList", shoppingListRouter);
+
 router.get("/authenticate/:id", verifyUser, function (req, res) {
   res.json({
     message: 'Authenticated!'

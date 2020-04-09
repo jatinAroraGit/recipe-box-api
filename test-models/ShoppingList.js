@@ -6,16 +6,18 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(10),
       allowNull: false,
       primaryKey: true,
+      autoIncrement: true,
       field: 'listId'
     },
     listItems: {
-      type: DataTypes.STRING(1000),
-      allowNull: false,
+      type: DataTypes.TEXT,
+      allowNull: true,
       field: 'listItems'
     },
     userId: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.STRING(1111),
       allowNull: false,
+      unique: true,
       field: 'userId'
     }
   }, {

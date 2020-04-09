@@ -30,6 +30,7 @@
     "greenlock-express": "^4.0.3",
     "internal-ip": "^6.0.0",
     "ip": "^1.1.5",
+    "local-ip": "^2.0.0",
     "localtunnel": "^2.0.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",

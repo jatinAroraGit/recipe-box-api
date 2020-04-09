@@ -123,7 +123,11 @@ exports.getRecipes = async function (req, res) {
         console.error(error);
         if (keyInUse < 2)
           keyInUse++;
+        else {
+          runAgain = false;
+        }
       }
+
     }
     console.log('API RESULTS ========');
 

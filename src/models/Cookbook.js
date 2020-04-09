@@ -1,11 +1,12 @@
 /* jshint indent: 2 */
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('cookbook', {
     cookbookId: {
       type: DataTypes.INTEGER(10),
       allowNull: false,
       primaryKey: true,
+      autoIncrement: true,
       field: 'cookbookId'
     },
     userId: {
@@ -20,15 +21,15 @@ module.exports = function(sequelize, DataTypes) {
     },
     recipes: {
       type: DataTypes.STRING(20000),
-      allowNull: false,
+      allowNull: true,
       field: 'recipes'
     },
     description: {
       type: DataTypes.STRING(10000),
-      allowNull: false,
+      allowNull: true,
       field: 'description'
     }
   }, {
-    tableName: 'Cookbook'
-  });
+      tableName: 'Cookbook'
+    });
 };

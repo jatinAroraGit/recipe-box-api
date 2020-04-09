@@ -2,8 +2,7 @@ var express = require("express");
 var app = express();
 var cors = require("cors");
 var path = require("path");
-var ip = require('internal-ip');
-var getInternalIp = require("get-internal-ip");
+//var ip = require('internal-ip');
 const admin = require('firebase-admin');
 const apiSecret = require('./config/apiKey.json');
 const apiRouter = require('./src/routing/api');
@@ -16,8 +15,6 @@ var HTTP_PORT = process.env.PORT || 5000;
 // VM Options
 const vmHostname = '10.102.112.128';
 const vmPort = 10034;
-const localIp = ip.v4();
-
 
 /*************DO NOT TOUCH ************************************ */
 app.use(cors());
@@ -29,26 +26,25 @@ app.get("/", function (req, res) {
 });
 console.log("System:: " + process.platform);
 if (process.platform == "win32" || process.platform == "darwin") {
-  const v4Info = (getInternalIp.v4());
+
   //  console.log(getInternalIp.v4());
   //const ipAdress = JSON.stringify(v4Info);
   //const idr = ipAdress["Wi-Fi"];
   // console.log(idr);
   //console.log(ipAdress);
   //console.log(ipAdress);
-  ip.v4().then(ipadr => {
-    console.log(ipadr);
-    app.listen(HTTP_PORT, ipadr, () => {
-      // app.listen(80, process.env.OPENSHIFT_NODEJS_IP || process.env.IP || '127.0.0.1', () => {
-      console.log("Server Running Locally On IP http://" + ipadr + ":" + HTTP_PORT + "/");
-      dataService.initialize()
-        .then(() => {
-          console.log('DATABASE CONNECTED SUCCESSFULLY');
-        }).catch((err) => {
-          console.log(err);
-        });
-    });
+
+  app.listen(HTTP_PORT, '192.168.0.14', () => {
+    // app.listen(80, process.env.OPENSHIFT_NODEJS_IP || process.env.IP || '127.0.0.1', () => {
+    console.log("Server Running Locally On IP http://" + '192.168.0.14' + ":" + HTTP_PORT + "/");
+    dataService.initialize()
+      .then(() => {
+        console.log('DATABASE CONNECTED SUCCESSFULLY');
+      }).catch((err) => {
+        console.log(err);
+      });
   });
+
   /* // Local Https Server Code 
   https.createServer({
     key: fs.readFileSync('./key.pem'),
