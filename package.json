@@ -26,7 +26,6 @@
     "express": "^4.17.1",
     "firebase-admin": "^8.8.0",
     "g": "^2.0.1",
-    "get-internal-ip": "^3.0.0",
     "greenlock-express": "^4.0.3",
     "localtunnel": "^2.0.0",
     "mysql": "^2.18.1",
