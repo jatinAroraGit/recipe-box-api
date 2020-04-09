@@ -7,10 +7,10 @@ var recipeController = require('../controllers/recipeController');
 var cookbookController = require('../controllers/cookbookController');
 
 // Routes for cookbook
-router.get('/cookbook', function (req, res) {
-  res.send({ "router": "cookbook" }); 
+router.get('/cookbookOld', function (req, res) {
+  res.send({ "router": "cookbook" });
 });
-
+/*
 router.post('/createCookbook', cookbookController.cookbookCreatePOST);
 router.post('/updateCookbook', cookbookController.cookbookUpdatePOST);
 router.post('/addRecipeToCookbook', cookbookController.addRecipeToCookbookPOST);
@@ -18,5 +18,5 @@ router.post('/removeRecipeFromCookbook', cookbookController.removeRecipeFromCook
 router.post('/deleteCookbook', cookbookController.cookbookDeletePOST);
 
 router.post('/test', cookbookController.cookbookTest);
-
+*/
 module.exports = router;
