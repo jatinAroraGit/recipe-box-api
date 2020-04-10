@@ -22,7 +22,7 @@ router.post('/allCookbooksByUserId', cookbookController.allCookbooksByUserId);
 router.post('/deleteCookbookRecipe', cookbookController.deleteCookbookRecipe);
 router.post('/updateCookbookInfo', cookbookController.updateCookbookInfo);
 router.post('/deleteCookbook', cookbookController.deleteCookbook);
-
+router.post('/addUserRecipeToCookbook', cookbookController.addUserRecipeToCookbook);
 
 /*
 router.post('/createRecipe', recipeController.recipeCreatePOST);

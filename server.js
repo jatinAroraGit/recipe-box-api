@@ -2,8 +2,10 @@ var express = require("express");
 var app = express();
 var cors = require("cors");
 var path = require("path");
+
 //var ip = require('internal-ip');
 const admin = require('firebase-admin');
+const serviceAccount = require('./config/firebaseServiceKey.json');
 const apiSecret = require('./config/apiKey.json');
 const apiRouter = require('./src/routing/api');
 //const admin = require('./src/firebase-admin/admin');
@@ -25,7 +27,7 @@ app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "src/home.html"));
 });
 console.log("System:: " + process.platform);
-if (process.platform == "win32" || process.platform == "darwin") {
+if (process.platform == "win32") {
 
   //  console.log(getInternalIp.v4());
   //const ipAdress = JSON.stringify(v4Info);
@@ -37,6 +39,17 @@ if (process.platform == "win32" || process.platform == "darwin") {
   app.listen(HTTP_PORT, '192.168.0.14', () => {
     // app.listen(80, process.env.OPENSHIFT_NODEJS_IP || process.env.IP || '127.0.0.1', () => {
     console.log("Server Running Locally On IP http://" + '192.168.0.14' + ":" + HTTP_PORT + "/");
+    /*
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    }, 'RecipeBoxAPI').auth().getUserByEmail('jarora4@myseneca.ca').then(data => {
+      console.log('FB Success');
+      console.log(data);
+      let uid = data.uid;
+      admin.auth().updateUser(uid, { password: '123456!Qw' });
+
+    });
+*/
     dataService.initialize()
       .then(() => {
         console.log('DATABASE CONNECTED SUCCESSFULLY');

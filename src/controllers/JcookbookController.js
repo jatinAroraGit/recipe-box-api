@@ -127,7 +127,30 @@ exports.addRecipeToCookbook = async function (req, res) {
   res.send('Successful Create');
 
 }
+exports.addUserRecipeToCookbook = async function (req, res) {
+  //recipeController.recipeAddToUserPOST(req);
+  let data = req.body;
+  let recipe = req.body.recipe;
+  let userCookbook = await Cookbook.findOne({
+    where: {
+      cookbookId: req.body.cookbookId
+    }
+  })
+  let newRecipe;
+  newRecipe = recipe.id;
+  let newRecipesList = ((userCookbook.recipes) ? userCookbook.recipes + ',' : '') + newRecipe;
+  await Cookbook.update({ recipes: newRecipesList }, {
 
+    where: {
+      cookbookId: req.body.cookbookId
+    }
+  })
+  globalUid = '';
+
+
+  res.send('Successful Create');
+
+}
 
 
 exports.deleteCookbookById = async function (req, res) {

@@ -151,7 +151,7 @@ exports.updateShoppingListOneItem = async function (req, res) {
     for (var i = 0; i < listItems.length; i++) {
       let itemProps = listItems[i].split('~');
       if (itemProps[0] == newItemName && itemProps[2] == newItemUnit) {
-        finalItems = itemProps[0] + '~' + (parseFloat(itemProps[1]) + parseFloat(req.body.quantity));
+        finalItems = itemProps[0] + '~' + parseFloat(req.body.quantity);
 
         listItems.splice(i, 1);
         break;
@@ -186,6 +186,66 @@ exports.updateShoppingListOneItem = async function (req, res) {
   let itemsList = updatedShoppingList.listItems.split(',');
   res.send(itemsList);
 }
+
+exports.deleteShoppingListItem = async function (req, res) {
+  let data = req.body;
+  let newItemName = req.body.name;
+  let newItemUnit = req.body.unit;
+  //console.log(newItem);
+
+  // let recipe = req.body.recipe;
+  let shoppingList = await ShoppingList.findOne({
+    where: {
+      userId: req.body.userId
+    }
+  });
+  let newListItems = '';
+  let finalItems = '';
+  if (shoppingList.listItems && shoppingList.listItems != '') {
+    let listItems = shoppingList.listItems.split(',')
+    for (var i = 0; i < listItems.length; i++) {
+      let itemProps = listItems[i].split('~');
+      if (newItemUnit != '') {
+        if (itemProps[0] == newItemName && itemProps[2] == newItemUnit) {
+          // finalItems = itemProps[0] + '~' + parseFloat(req.body.quantity);
+
+          listItems.splice(i, 1);
+          break;
+        }
+      }
+      else {
+        if (itemProps[0] == newItemName) {
+          // finalItems = itemProps[0] + '~' + parseFloat(req.body.quantity);
+
+          listItems.splice(i, 1);
+          break;
+        }
+      }
+    }
+
+    finalItems = listItems.join(',');
+    console.log(finalItems);
+  }
+  else {
+    newListItems = req.body.listItems;
+  }
+
+
+  await ShoppingList.update({ listItems: finalItems }, {
+    where: {
+      userId: req.body.userId
+    }
+
+  });
+  let updatedShoppingList = await ShoppingList.findOne({
+    where: {
+      userId: req.body.userId
+    }
+  })
+  let itemsList = updatedShoppingList.listItems.split(',');
+  res.send(itemsList);
+}
+
 
 
 exports.updateCookbook = async function (req, res) {
@@ -338,6 +398,17 @@ exports.updateCookbookInfo = async function (req, res) {
   }
 
   await Cookbook.update(data, {
+    where: {
+      userId: req.body.userId,
+      cookbookId: req.body.cookbookId
+    }
+  })
+  res.send('Success');
+}
+
+exports.deleteCookbook = async function (req, res) {
+
+  await Cookbook.destroy({
     where: {
       userId: req.body.userId,
       cookbookId: req.body.cookbookId

@@ -27,16 +27,17 @@ var db = new Sequelize(keys.dbUsername, keys.dbUsername, keys.dbPass, {
     timestamps: false
   }
 });
-const resultLimit = 5; // limit of spoonacular api results; 
+const resultLimit = 20; // limit of spoonacular api results; 
 var UserRecipes = db.import('../models/UserRecipes.js');
 var UserAccount = db.import('../models/UserAccount.js');
-
+var Cookbook = db.import('../models/Cookbook.js')
 var RecipeIngredients = db.import('../models/RecipeIngredients.js');
 var UserRecipeInstructions = db.import('../models/UserRecipeInstructions.js');
 
 let keysAvailable = [];
 keysAvailable.push(keys.key);
 keysAvailable.push(keys.key2);
+keysAvailable.push(keys.key3);
 let keyInUse = 0;
 /* Gets a list of recipes matching criteria
 format to come from APP : http://localhost:8082/recipe/search?id=123&cuisine=italian&title=pizza
@@ -125,6 +126,7 @@ exports.getRecipes = async function (req, res) {
           keyInUse++;
         else {
           runAgain = false;
+          keyInUse = 0;
         }
       }
 
@@ -353,8 +355,12 @@ exports.recipeDetail = async function (req, res) {
         res.send(recipeDetail);
       } catch (error) {
         console.error(error);
-        if (keyInUse < 2)
+        if (keyInUse < 3)
           keyInUse++;
+        else {
+          runAgain = false;
+          keyInUse = 0;
+        }
       }
     }
   }
@@ -833,9 +839,10 @@ exports.recipeUpdatePOST = async function (req, res) {
 
 }
 
-// Display Author delete form on GET.
+//  delete form on post.
 exports.recipeDelete = async function (req, res) {
   let uid = req.body.uid;
+
   await UserRecipes.destroy({
     where: {
       uid: uid
@@ -851,7 +858,31 @@ exports.recipeDelete = async function (req, res) {
       recipeUID: uid
     }
   })
-
+  /*
+    const rows = await Cookbook.findAll({
+      where: {
+        userId: req.body.userId
+      }
+    });
+    let finalRecipesList
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].recipes.includes(uid)) {
+        //Remove that
+        let recipesArr = rows[i].recipes.split(',')
+        for (var x = 0; x < recipesArr.length; x++) {
+          if (recipesArr[x] == uid) {
+            recipesArr.splice(x, 1);
+          }
+        }
+        finalRecipesList = recipesArr.join(',');
+        await Cookbook.update({ recipes: finalRecipesList }, {
+          where: {
+            cookbookId: rows[i].cookbookId
+          }
+        })
+      };
+    }
+  */
   res.send('Success');
 };
 

@@ -15,7 +15,7 @@ router.post('/createShoppingList', shoppingListController.createShoppingList);
 router.post('/updateShoppingList', shoppingListController.updateShoppingList);
 router.post('/getShoppingList', shoppingListController.getShoppingList);
 router.post('/updateShoppingListOneItem', shoppingListController.updateShoppingListOneItem);
-
+router.post('/deleteShoppingListItem', shoppingListController.deleteShoppingListItem)
 
 
 module.exports = router;
