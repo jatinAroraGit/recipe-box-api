@@ -27,7 +27,7 @@ var db = new Sequelize(keys.dbUsername, keys.dbUsername, keys.dbPass, {
     timestamps: false
   }
 });
-const resultLimit = 3; // limit of spoonacular api results; 
+const resultLimit = 20; // limit of spoonacular api results; 
 var UserRecipes = db.import('../models/UserRecipes.js');
 var UserAccount = db.import('../models/UserAccount.js');
 var Cookbook = db.import('../models/Cookbook.js')
