@@ -2,7 +2,7 @@
 // Display list of all Authors.
 var axios = require('axios');
 const urlBase = "https://api.spoonacular.com/recipes/"
-const apiKey = process.env.secret;
+const apiKey = require('../../config/apiKey.json');
 const keys = require('../../config/apiKey.json')
 var sanitizeHtml = require('sanitize-html');
 var stripHtml = require('string-strip-html');
@@ -27,17 +27,14 @@ var db = new Sequelize(keys.dbUsername, keys.dbUsername, keys.dbPass, {
     timestamps: false
   }
 });
-const resultLimit = 20; // limit of spoonacular api results; 
+const resultLimit = 3; // limit of spoonacular api results; 
 var UserRecipes = db.import('../models/UserRecipes.js');
 var UserAccount = db.import('../models/UserAccount.js');
 var Cookbook = db.import('../models/Cookbook.js')
 var RecipeIngredients = db.import('../models/RecipeIngredients.js');
 var UserRecipeInstructions = db.import('../models/UserRecipeInstructions.js');
 
-let keysAvailable = [];
-keysAvailable.push(keys.key);
-keysAvailable.push(keys.key2);
-keysAvailable.push(keys.key3);
+
 let keyInUse = 0;
 /* Gets a list of recipes matching criteria
 format to come from APP : http://localhost:8082/recipe/search?id=123&cuisine=italian&title=pizza
@@ -87,7 +84,7 @@ exports.getRecipes = async function (req, res) {
     //Builing Query for spoonacular
     var encodedQueryString = encodeURIComponent(req.body.query);
     var searchQuery = "query=" + encodedQueryString + '&cuisine=' + req.body.cuisine + '&type=' + req.body.mealType;
-    if (req.body.includeIngredients.length > 0) {
+    if (req.body.includeIngredients) {
       searchQuery = searchQuery + '&includeIngredients=';
       //  var ingredients = JSON.parse(req.body);
       for (var i = 0; i < req.body.includeIngredients.length; i++) {
@@ -95,42 +92,33 @@ exports.getRecipes = async function (req, res) {
       }
     }
 
-    let usingKey = keysAvailable[keyInUse];
-
-    let runAgain = true;
-    while (runAgain) {
-      try {
-        let result;
-        usingKey = keysAvailable[keyInUse];
-        var reqURL = urlBase + 'complexSearch?apiKey=' + usingKey + '&number=' + resultLimit + '&' + 'addRecipeInformation=true&instructionsRequired=true&' + searchQuery;
-        console.log('Spoonacular Query: ' + reqURL);
-        await axios.get(reqURL).then(recipes => {
-          // let recipeObj = JSON.parse(recipes.data.results);
-          runAgain = false;
-          recipes.data.results.forEach(recipe => {
-            let details = new RecipeDetails(recipe.id, false, recipe.sourceName, recipe.title, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", (recipe.cuisines) ? recipe.cuisines[0] : "", (recipe.dishTypes) ? recipe.dishTypes[0] : "", false, "");
-            recipeResults.push(details);
-            console.log(details);
-            console.log("*****************");
-          });
 
 
-          //result = JSON.stringify(recipeResults);
-          // response = result;
-
+    try {
+      let result;
+      var reqURL = urlBase + 'complexSearch?apiKey=' + apiKey.key + '&number=' + resultLimit + '&' + 'addRecipeInformation=true&instructionsRequired=true&' + searchQuery;
+      console.log('Spoonacular Query: ' + reqURL);
+      await axios.get(reqURL, { timeout: 10000 }).then(recipes => {
+        // let recipeObj = JSON.parse(recipes.data.results);
+        runAgain = false;
+        recipes.data.results.forEach(recipe => {
+          let details = new RecipeDetails(recipe.id, false, recipe.sourceName, recipe.title, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", (recipe.cuisines) ? recipe.cuisines[0] : "", (recipe.dishTypes) ? recipe.dishTypes[0] : "", false, "");
+          recipeResults.push(details);
+          console.log(details);
+          console.log("*****************");
         });
-        // response = result;
-      } catch (error) {
-        console.error(error);
-        if (keyInUse < 2)
-          keyInUse++;
-        else {
-          runAgain = false;
-          keyInUse = 0;
-        }
-      }
 
+
+        //result = JSON.stringify(recipeResults);
+        // response = result;
+
+      });
+      // response = result;
+    } catch (error) {
+      console.error(error);
     }
+
+
     console.log('API RESULTS ========');
 
     // res.send(response);
@@ -160,14 +148,14 @@ exports.getRecipes = async function (req, res) {
             }
 
           );
-          console.log(rows);
+
           rows.forEach(row => {
             ingredientSearchResults.push(row);
           })
 
         };
 
-        console.log(ingredientSearchResults);
+
 
         let commonIngredients = [];
         var matchCount = 0;
@@ -195,11 +183,11 @@ exports.getRecipes = async function (req, res) {
           }
         }
 
-        console.log(recipesWithIngredients);
+
         if (recipesWithIngredients.length > 0) {
           for (var id = 0; id < recipesWithIngredients.length; id++) {
             var index = recipesWithIngredients[id]
-            console.log(index);
+
             await getUserRecipe(index).then(recipe => {
               /*
               let recipe = UserRecipes.findOne({
@@ -210,17 +198,14 @@ exports.getRecipes = async function (req, res) {
               });
               */
               if (recipe && recipe.isPublished) {
-                console.log("found recipe", recipe);
+
                 let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, recipe.isPublished, recipe.userId);
-                console.log("USER RESULT:: " + detail);
 
                 foundRecipesWithId.push(detail);
               }
             });
 
 
-
-            console.log('iterator');
           };
         }
 
@@ -325,44 +310,38 @@ exports.recipeDetail = async function (req, res) {
   var id = "";
   id = id + req.body.id;
   if (id.charAt(0) != 'U') {
-    let usingKey = keysAvailable[keyInUse];
 
     let runAgain = true;
-    while (runAgain) {
-      try {
-        usingKey = keysAvailable[keyInUse];
-        recipe = await axios.get(urlBase + id + '/information?apiKey=' + usingKey);
-        let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title, recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines) ? recipe.data.cuisines[0] : "", (recipe.data.dishTypes) ? recipe.data.dishTypes[0] : "", false, "");
-        recipe.data.extendedIngredients.forEach(i => {
-          let newIngredient = new Ingredients(i.id, i.name, i.amount, i.unit)
-          recipeDetail.includedIngredients.push(newIngredient);
-        });
-        console.log(recipe.data.analyzedInstructions);
-        await recipe.data.analyzedInstructions.forEach(s => {
-          console.log(s);
-          for (var i = 0; i < s.steps.length; i++) {
-            var step = s.steps[i];
-            let newStep;
-            if (i == 0)
-              newStep = new Steps(step.number, step.step, s.name);
-            else
-              newStep = new Steps(step.number, step.step, "");
-            recipeDetail.instructions.push(newStep);
-          }
 
-        })
-        runAgain = false;
-        res.send(recipeDetail);
-      } catch (error) {
-        console.error(error);
-        if (keyInUse < 3)
-          keyInUse++;
-        else {
-          runAgain = false;
-          keyInUse = 0;
+    try {
+
+      recipe = await axios.get(urlBase + id + '/information?apiKey=' + apiKey.key);
+      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title, recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines) ? recipe.data.cuisines[0] : "", (recipe.data.dishTypes) ? recipe.data.dishTypes[0] : "", false, "");
+      recipe.data.extendedIngredients.forEach(i => {
+        let newIngredient = new Ingredients(i.id, i.name, i.amount, i.unit)
+        recipeDetail.includedIngredients.push(newIngredient);
+      });
+      console.log(recipe.data.analyzedInstructions);
+      await recipe.data.analyzedInstructions.forEach(s => {
+        console.log(s);
+        for (var i = 0; i < s.steps.length; i++) {
+          var step = s.steps[i];
+          let newStep;
+          if (i == 0)
+            newStep = new Steps(step.number, step.step, s.name);
+          else
+            newStep = new Steps(step.number, step.step, "");
+          recipeDetail.instructions.push(newStep);
         }
-      }
+
+      })
+      runAgain = false;
+      res.send(recipeDetail);
+    } catch (error) {
+      console.error(error);
+
     }
+
   }
   else
     if (id.charAt(0) == 'U') {

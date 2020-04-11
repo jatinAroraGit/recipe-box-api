@@ -12,5 +12,5 @@ router.get('/', function (req, res) {
 
 router.post('/createUserAccount', userAccountController.userAccountCreatePOST);
 router.post('/getUserAccount', userAccountController.getUserAccountById);
-router.post('/delete',userAccountController.userAccountDeletePOST);
+router.post('/delete', userAccountController.userAccountDeletePOST);
 module.exports = router;

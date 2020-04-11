@@ -118,15 +118,17 @@ router.get("/reset/:email", function (req, res) {
 
 });
 
-router.get("/resetPassword/:userEmail/:userPassword", function (req, res) {
-  admin.auth().getUserByEmail(req.params.userEmail).then(data => {
+router.get("/resetPassword/:userEmail/:userPassword", async function (req, res) {
+  admin.auth().getUserByEmail(req.params.userEmail).then(async (data) => {
     console.log('FB Success');
     console.log(data);
     let uid = data.uid;
-    admin.auth().updateUser(uid, { password: req.params.userPassword });
+    await admin.auth().updateUser(uid, { password: req.params.userPassword }).catch((err) => {
+      console.log(err);
+    });
     res.send('Success');
   }).catch((err) => {
-    res.send('Failed');
+    console.log(err);
   });
 });
 

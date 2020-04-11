@@ -150,19 +150,26 @@ exports.updateShoppingListOneItem = async function (req, res) {
     let listItems = shoppingList.listItems.split(',')
     for (var i = 0; i < listItems.length; i++) {
       let itemProps = listItems[i].split('~');
-      if (itemProps[0] == newItemName && itemProps[2] == newItemUnit) {
-        finalItems = itemProps[0] + '~' + parseFloat(req.body.quantity);
+      if (newItemUnit != '' || newItemUnit) {
+        if (itemProps[0] == newItemName && itemProps[2] == newItemUnit) {
+          finalItems = itemProps[0] + '~' + parseFloat(req.body.quantity) + '~' + newItemUnit;
 
-        listItems.splice(i, 1);
-        break;
+          listItems.splice(i, 1);
+          break;
+        }
+      }
+      else {
+        if (itemProps[0] == newItemName) {
+          finalItems = itemProps[0] + '~' + parseFloat(req.body.quantity);
+
+          listItems.splice(i, 1);
+          break;
+        }
       }
     }
     let updatedItem = ''
-    if (req.body.unit != '')
-      updatedItem = finalItems + '~' + req.body.unit;
-    else
-      updatedItem = finalItems;
-    listItems.push(updatedItem);
+
+    listItems.push(finalItems);
 
     finalItems = listItems.join(',');
     console.log(finalItems);

@@ -20,16 +20,20 @@ var ShoppingList = db.import('../models/ShoppingList.js');
 var RecipeIngredients = db.import('../models/RecipeIngredients.js');
 var UserRecipeInstructions = db.import('../models/UserRecipeInstructions.js');
 
-exports.userAccountCreatePOST = function (req, res) {
+exports.userAccountCreatePOST = async function (req, res) {
   res.type('application/json')
   console.log('CREATING USER \n');
   const data = req.body;
   // var user = JSON.parse(data);
   //console.log(user.email);
   // console.log(req.body.email);
-  UserAccount.create(req.body).then(() => {
-    res.send('DONE')
+  await UserAccount.create(req.body).then(async () => {
 
+    await ShoppingList.create({ userId: req.body.uid }).then(async () => {
+      res.send('Done');
+    }).catch((err) => {
+      res.send('failed');
+    });
     console.log('Created');
   }).catch((err) => {
     res.send(err);
@@ -75,11 +79,14 @@ exports.userAccountDeletePOST = function (req, res) {
   UserRecipes.destroy({
     where: { userId: req.body.userId }
   })
+
+  ShoppingList.destroy({
+    where: { userId: req.body.userId }
+  })
     .then(() => {
       res.send("Success");
     })
     .catch(() => {
       res.send("Error! User was not deleted");
     })
-
 }

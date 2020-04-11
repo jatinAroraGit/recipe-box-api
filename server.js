@@ -54,6 +54,7 @@ if (process.platform == "win32") {
       .then(() => {
         console.log('DATABASE CONNECTED SUCCESSFULLY');
       }).catch((err) => {
+
         console.log(err);
       });
   });
