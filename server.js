@@ -103,7 +103,7 @@ app.get('/android', function (req, res) {
   }
 });
 app.post('/test', function (req, res) {
-  res.send({ "TestCall": "Success" });
+  res.send({ "Test": "Successful" });
 });
 
 app.get('/ios', function (req, res) {

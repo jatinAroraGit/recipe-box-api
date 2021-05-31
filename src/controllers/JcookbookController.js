@@ -298,7 +298,7 @@ async function userCookbookRecipeDetail(recipeId) {
 };
 
 async function getUserRecipe(uid) {
-  let recipe = UserRecipes.findOne({
+  let recipe = await UserRecipes.findOne({
     where: {
       uid: uid
     },

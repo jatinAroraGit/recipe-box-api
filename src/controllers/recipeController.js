@@ -27,7 +27,7 @@ var db = new Sequelize(keys.dbUsername, keys.dbUsername, keys.dbPass, {
     timestamps: false
   }
 });
-const resultLimit = 20; // limit of spoonacular api results; 
+const resultLimit = 6; // limit of spoonacular api results; 
 var UserRecipes = db.import('../models/UserRecipes.js');
 var UserAccount = db.import('../models/UserAccount.js');
 var Cookbook = db.import('../models/Cookbook.js')
@@ -35,13 +35,22 @@ var RecipeIngredients = db.import('../models/RecipeIngredients.js');
 var UserRecipeInstructions = db.import('../models/UserRecipeInstructions.js');
 
 
-let keyInUse = 0;
+
 /* Gets a list of recipes matching criteria
 format to come from APP : http://localhost:8082/recipe/search?id=123&cuisine=italian&title=pizza
 */
 exports.getRecipes = async function (req, res) {
   console.log('KEY %%%% : ')
   console.log(apiKey);
+  if (req.body.query) {
+    req.body.query = req.body.query.toUpperCase();
+  }
+  if (req.body.cuisine) {
+    req.body.cuisine = req.body.cuisine.toUpperCase();
+  }
+  if (req.body.mealType) {
+    req.body.mealType = req.body.mealType.toUpperCase();
+  }
   var flag = true;
   let searchBoth = true;
   let response = "";
@@ -80,7 +89,7 @@ exports.getRecipes = async function (req, res) {
 
   console.log('DB ======= ');
   console.log(dbQuery.key);
-  if (flag) { //&& searchBoth) {
+  if (!flag) { //&& searchBoth) {
     //Builing Query for spoonacular
     var encodedQueryString = encodeURIComponent(req.body.query);
     var searchQuery = "query=" + encodedQueryString + '&cuisine=' + req.body.cuisine + '&type=' + req.body.mealType;
@@ -102,7 +111,7 @@ exports.getRecipes = async function (req, res) {
         // let recipeObj = JSON.parse(recipes.data.results);
         runAgain = false;
         recipes.data.results.forEach(recipe => {
-          let details = new RecipeDetails(recipe.id, false, recipe.sourceName, recipe.title, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", (recipe.cuisines) ? recipe.cuisines[0] : "", (recipe.dishTypes) ? recipe.dishTypes[0] : "", false, "");
+          let details = new RecipeDetails(recipe.id, false, recipe.sourceName, recipe.title.toUpperCase(), recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.image, "", (recipe.cuisines.length > 0) ? recipe.cuisines[0].toUpperCase() : "", (recipe.dishTypes.length > 0) ? recipe.dishTypes[0].toUpperCase() : "", false, "");
           recipeResults.push(details);
           console.log(details);
           console.log("*****************");
@@ -148,7 +157,6 @@ exports.getRecipes = async function (req, res) {
             }
 
           );
-
           rows.forEach(row => {
             ingredientSearchResults.push(row);
           })
@@ -199,7 +207,7 @@ exports.getRecipes = async function (req, res) {
               */
               if (recipe && recipe.isPublished) {
 
-                let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, recipe.isPublished, recipe.userId);
+                let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle.toUpperCase(), recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", (recipe.cuisine) ? recipe.cuisine.toUpperCase() : recipe.cuisine, (recipe.mealType) ? recipe.mealType.toUpperCase() : recipe.mealType, recipe.isPublished, recipe.userId);
 
                 foundRecipesWithId.push(detail);
               }
@@ -226,6 +234,7 @@ exports.getRecipes = async function (req, res) {
               [Op.or]: {
                 recipeTitle: {
                   [Op.like]: '%' + req.body.query + '%',
+
                 },
                 summary: {
                   [Op.like]: '%' + req.body.query + '%',
@@ -240,7 +249,7 @@ exports.getRecipes = async function (req, res) {
         );
         // const result = JSON.stringify(rows);
         rows.forEach(recipe => {
-          let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, recipe.isPublished, recipe.userId);
+          let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle.toUpperCase(), recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", (recipe.cuisine) ? recipe.cuisine.toUpperCase() : recipe.cuisine, (recipe.mealType) ? recipe.mealType.toUpperCase() : recipe.mealType, recipe.isPublished, recipe.userId);
           console.log("USER RESULT:: " + detail);
           recipeResults.push(detail);
 
@@ -253,10 +262,10 @@ exports.getRecipes = async function (req, res) {
       //The Loop For not seraching/filtering with ingredients
       else {
         var search = {};
-        if (req.body.cuisine)
+        if (req.body.cuisine && req.body.cuisine != "")
           search.cuisine = { [Op.like]: '%' + req.body.cuisine + '%' };
 
-        if (req.body.mealType)
+        if (req.body.mealType && req.body.mealType != "")
           search.mealType = { [Op.like]: '%' + req.body.mealType + '%' };
 
         const { count, rows } = await UserRecipes.findAndCountAll(
@@ -279,6 +288,15 @@ exports.getRecipes = async function (req, res) {
         );
 
         //  const result = JSON.stringify(rows);
+        for (var i = 0; i < rows.length; i++) {
+          let recipe = rows[i];
+          if (recipe.isPublished) {
+            let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle.toUpperCase(), recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", (recipe.cuisine) ? recipe.cuisine.toUpperCase() : recipe.cuisine, (recipe.mealType) ? recipe.mealType.toUpperCase() : recipe.mealType, recipe.isPublished, recipe.userId);
+            console.log("USER RESULT:: " + detail);
+            recipeResults.push(detail);
+          }
+        }
+        /*
         rows.forEach(recipe => {
           if (recipe.isPublished) {
             let detail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, recipe.isPublished, recipe.userId);
@@ -286,7 +304,7 @@ exports.getRecipes = async function (req, res) {
             recipeResults.push(detail);
           }
         });
-
+*/
         //  response = result;
 
         res.send(recipeResults);
@@ -309,14 +327,14 @@ exports.recipeDetail = async function (req, res) {
   // console.log('Sending API Request to : '+ urlBase+req.params.id+'/information');
   var id = "";
   id = id + req.body.id;
-  if (id.charAt(0) != 'U') {
+  if (id.charAt(0) != 'U' && false) {
 
     let runAgain = true;
 
     try {
 
       recipe = await axios.get(urlBase + id + '/information?apiKey=' + apiKey.key);
-      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title, recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines) ? recipe.data.cuisines[0] : "", (recipe.data.dishTypes) ? recipe.data.dishTypes[0] : "", false, "");
+      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title.toUpperCase(), recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines.length > 0) ? recipe.data.cuisines[0].toUpperCase() : "", (recipe.data.dishTypes.length > 0) ? recipe.data.dishTypes[0].toUpperCase() : "", false, "");
       recipe.data.extendedIngredients.forEach(i => {
         let newIngredient = new Ingredients(i.id, i.name, i.amount, i.unit)
         recipeDetail.includedIngredients.push(newIngredient);
@@ -353,7 +371,7 @@ exports.recipeDetail = async function (req, res) {
 
       });
 
-      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, recipe.isPublished, recipe.userId);
+      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle.toUpperCase(), recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", (recipe.cuisine) ? recipe.cuisine.toUpperCase() : recipe.cuisine, (recipe.mealType) ? recipe.mealType.toUpperCase() : recipe.mealType, recipe.isPublished, recipe.userId);
       console.log(ingredients);
       ingredients.forEach(i => {
         let newIngredient = new Ingredients(i.ingredientId, i.ingredientName, i.quantityUsed, i.unitOfMeasure)
@@ -386,7 +404,7 @@ exports.userRecipeDetail = async function (req, res) {
   if (id.charAt(0) != 'U') {
     try {
       recipe = await axios.get(urlBase + id + '/information?apiKey=' + keys.key);
-      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title, recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines) ? recipe.data.cuisines[0] : "", (recipe.data.dishTypes) ? recipe.data.dishTypes[0] : "", false, "");
+      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title.toUpperCase(), recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines.length > 0) ? recipe.data.cuisines[0].toUpperCase() : "", (recipe.data.dishTypes.length > 0) ? recipe.data.dishTypes[0].toUpperCase() : "", false, "");
       recipe.data.extendedIngredients.forEach(i => {
         let newIngredient = new Ingredients(i.id, i.name, i.amount, i.unit)
         recipeDetail.includedIngredients.push(newIngredient);
@@ -420,7 +438,7 @@ exports.userRecipeDetail = async function (req, res) {
 
       });
 
-      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, (recipe.isPublished == 1) ? true : false, recipe.userId);
+      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle.toUpperCase(), recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", (recipe.cuisine) ? recipe.cuisine.toUpperCase() : recipe.cuisine, (recipe.mealType) ? recipe.mealType.toUpperCase() : recipe.mealType, (recipe.isPublished == 1) ? true : false, recipe.userId);
       console.log(ingredients);
       ingredients.forEach(i => {
         let newIngredient = new Ingredients(i.ingredientId, i.ingredientName, i.quantityUsed, i.unitOfMeasure)
@@ -483,6 +501,12 @@ exports.recipeCreatePOST = async function (req, res) {
   console.log(data);
   let isPosted = false;
   let newUserRecipe;
+  if (data.recipeTitle)
+    data.recipeTitle = data.recipeTitle.toUpperCase();
+  if (data.cuisine)
+    data.cuisine = data.cuisine.toUpperCase();
+  if (data.mealType)
+    data.mealType = data.mealType.toUpperCase();
   /*
     IngredientsCategory.create(data).then(() => {
       res.send('DONE')
@@ -505,8 +529,8 @@ exports.recipeCreatePOST = async function (req, res) {
           let sendData = {
             "recipeId": newUserRecipe.id,
             "recipeUid": newUserRecipe.uid,
-            "ingredientName": data.ingredients[i].name,
-            "quantityUsed": data.ingredients[i].quantity,
+            "ingredientName": data.ingredients[i].name.toUpperCase(),
+            "quantityUsed": data.ingredients[i].amount,
             "unitOfMeasure": data.ingredients[i].unit
 
           }
@@ -572,7 +596,7 @@ async function getRecipeDetails(recipeId) {
   if (id.charAt(0) != 'U') {
     try {
       recipe = await axios.get(urlBase + id + '/information?apiKey=' + keys.key);
-      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title, recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines) ? recipe.data.cuisines[0] : "", (recipe.data.dishTypes) ? recipe.data.dishTypes[0] : "", false, "");
+      let recipeDetail = new RecipeDetails(recipe.data.id, false, recipe.data.sourceName, recipe.data.title.toUpperCase(), recipe.data.summary, recipe.data.servings, recipe.data.readyInMinutes, recipe.data.image, "", (recipe.data.cuisines.length > 0) ? recipe.data.cuisines[0].toUpperCase() : "", (recipe.data.dishTypes.length > 0) ? recipe.data.dishTypes[0].toUpperCase() : "", false, "");
       recipe.data.extendedIngredients.forEach(i => {
         let newIngredient = new Ingredients(i.id, i.name, i.amount, i.unit)
         recipeDetail.includedIngredients.push(newIngredient);
@@ -606,7 +630,7 @@ async function getRecipeDetails(recipeId) {
 
       });
 
-      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle, recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", recipe.cuisine, recipe.mealType, (recipe.isPublished == 1) ? true : false, recipe.userId);
+      let recipeDetail = new RecipeDetails(recipe.uid, true, recipe.sourceName, recipe.recipeTitle.toUpperCase(), recipe.summary, recipe.servings, recipe.readyInMinutes, recipe.recipeImage, "", (recipe.cuisine) ? recipe.cuisine.toUpperCase() : recipe.cuisine, (recipe.mealType) ? recipe.mealType.toUpperCase() : recipe.mealType, (recipe.isPublished == 1) ? true : false, recipe.userId);
       console.log(ingredients);
       ingredients.forEach(i => {
         let newIngredient = new Ingredients(i.ingredientId, i.ingredientName, i.quantityUsed, i.unitOfMeasure)
@@ -641,6 +665,8 @@ exports.recipeAddToUserPOST = async function (req, res) {
   delete data.image;
   data.recipeImage = image;
   let originalSummary = data.summary;
+
+
   var cleanSummary = sanitizeHtml(originalSummary);
   let pureTextSummary = stripHtml(cleanSummary);
   data.summary = pureTextSummary;
@@ -689,7 +715,7 @@ exports.recipeAddToUserPOST = async function (req, res) {
         let sendData = {
           "recipeId": userRecipe.id,
           "recipeUid": userRecipe.uid,
-          "ingredientName": ingredients[i].name,
+          "ingredientName": ingredients[i].name.toUpperCase(),
           "quantityUsed": ingredients[i].amount,
           "unitOfMeasure": ingredients[i].unit
 
@@ -744,7 +770,15 @@ exports.recipeUpdatePOST = async function (req, res) {
   let data = req.body;
   let isPosted = false;
   let uid = req.body.uid;
-
+  if (data.recipeTitle) {
+    data.recipeTitle = data.recipeTitle.toUpperCase();
+  }
+  if (data.mealType) {
+    data.mealType = data.mealType.toUpperCase();
+  }
+  if (data.cuisine) {
+    data.cuisine = data.cuisine.toUpperCase()
+  }
   console.log(data);
   await UserRecipes.update(data, {
     returning: true,
@@ -775,7 +809,7 @@ exports.recipeUpdatePOST = async function (req, res) {
         let sendData = {
           "recipeId": recipeId,
           "recipeUid": uid,
-          "ingredientName": data.ingredients[i].name,
+          "ingredientName": data.ingredients[i].name.toUpperCase(),
           "quantityUsed": data.ingredients[i].amount,
           "unitOfMeasure": data.ingredients[i].unit
 
