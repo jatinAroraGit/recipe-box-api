@@ -3,7 +3,7 @@
 module.exports = function (sequelize, DataTypes) {
   return sequelize.define('shoppingList', {
     listId: {
-      type: DataTypes.INTEGER(10),
+      type: DataTypes.INTEGER(3),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true,
@@ -15,12 +15,12 @@ module.exports = function (sequelize, DataTypes) {
       field: 'listItems'
     },
     userId: {
-      type: DataTypes.STRING(1111),
+      type: DataTypes.STRING(100),
       allowNull: false,
       unique: true,
       field: 'userId'
     }
   }, {
-      tableName: 'ShoppingList'
-    });
+    tableName: 'ShoppingList'
+  });
 };

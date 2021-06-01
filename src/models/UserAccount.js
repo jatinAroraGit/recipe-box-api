@@ -22,12 +22,12 @@ module.exports = function (sequelize, DataTypes) {
       field: 'userEmail'
     },
     securityQuestion: {
-      type: DataTypes.STRING(10000),
+      type: DataTypes.TEXT,
       allowNull: false,
       field: 'securityQuestion'
     },
     response: {
-      type: DataTypes.STRING(10000),
+      type: DataTypes.TEXT,
       allowNull: false,
       field: 'response'
     },
@@ -42,6 +42,6 @@ module.exports = function (sequelize, DataTypes) {
       field: 'userCookbooks'
     }
   }, {
-      tableName: 'UserAccount'
-    });
+    tableName: 'UserAccount'
+  });
 };

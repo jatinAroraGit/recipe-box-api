@@ -13,7 +13,7 @@ const dataService = require('./src/routing/routes');
 const https = require('https');
 const fs = require('fs');
 var cookieParser = require('cookie-parser');
-var HTTP_PORT = process.env.PORT || 5000;
+var HTTP_PORT = process.env.PORT || 3000;
 // VM Options
 const vmHostname = '10.102.112.128';
 const vmPort = 10034;
@@ -36,7 +36,7 @@ if (process.platform == "win32") {
   //console.log(ipAdress);
   //console.log(ipAdress);
 
-  app.listen(HTTP_PORT, '192.168.0.14', () => {
+  app.listen(HTTP_PORT, () => {
     // app.listen(80, process.env.OPENSHIFT_NODEJS_IP || process.env.IP || '127.0.0.1', () => {
     console.log("Server Running Locally On IP http://" + '192.168.0.14' + ":" + HTTP_PORT + "/");
     /*

@@ -10,26 +10,26 @@ module.exports = function (sequelize, DataTypes) {
       field: 'cookbookId'
     },
     userId: {
-      type: DataTypes.STRING(1000),
+      type: DataTypes.TEXT,
       allowNull: false,
       field: 'userId'
     },
     title: {
-      type: DataTypes.STRING(10000),
+      type: DataTypes.TEXT,
       allowNull: false,
       field: 'title'
     },
     recipes: {
-      type: DataTypes.STRING(20000),
+      type: DataTypes.TEXT,
       allowNull: true,
       field: 'recipes'
     },
     description: {
-      type: DataTypes.STRING(10000),
+      type: DataTypes.TEXT,
       allowNull: true,
       field: 'description'
     }
   }, {
-      tableName: 'Cookbook'
-    });
+    tableName: 'Cookbook'
+  });
 };

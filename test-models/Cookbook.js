@@ -1,6 +1,6 @@
 /* jshint indent: 2 */
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('cookbook', {
     cookbookId: {
       type: DataTypes.INTEGER(10),
@@ -10,12 +10,12 @@ module.exports = function(sequelize, DataTypes) {
       field: 'cookbookId'
     },
     userId: {
-      type: DataTypes.STRING(1000),
+      type: DataTypes.TEXT,
       allowNull: false,
       field: 'userId'
     },
     title: {
-      type: DataTypes.STRING(10000),
+      type: DataTypes.TEXT,
       allowNull: false,
       field: 'title'
     },
@@ -25,7 +25,7 @@ module.exports = function(sequelize, DataTypes) {
       field: 'recipes'
     },
     description: {
-      type: DataTypes.STRING(10000),
+      type: DataTypes.TEXT,
       allowNull: false,
       field: 'description'
     }

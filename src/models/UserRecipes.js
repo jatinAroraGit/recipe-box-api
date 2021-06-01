@@ -26,7 +26,7 @@ module.exports = function (sequelize, DataTypes) {
       field: 'recipeTitle'
     },
     summary: {
-      type: DataTypes.STRING(10000),
+      type: DataTypes.TEXT,
       allowNull: true,
       field: 'summary'
     },
@@ -114,6 +114,6 @@ module.exports = function (sequelize, DataTypes) {
       field: 'readyInMinutes'
     }
   }, {
-      tableName: 'UserRecipes'
-    });
+    tableName: 'UserRecipes'
+  });
 };
